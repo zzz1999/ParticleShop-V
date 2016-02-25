@@ -1,15 +1,11 @@
 # ParticleShop 
 A magical particle trail plugin:D<br>
-Ò»¸öÉñÆæµÄÁ£×Ó¸ú×Ù²å¼ş¡£:D
+ä¸€ä¸ªç¥å¥‡çš„ç²’å­è·Ÿè¸ªæ’ä»¶ã€‚:D
 # Usages
 - /ps set <number><br>
-- ÉèÖÃÁ£×Ó | choose the kind of particles<br>
+- è®¾ç½®ç²’å­ | choose the kind of particles<br>
 - /ps stop<br>
-- ¹Ø±ÕÁ£×Ó | Prevent the partcles<br>
+- å…³é—­ç²’å­ | Prevent the partcles<br>
 - /ps list<br>
-- ÁĞ³öÄãËùÄÜÊ¹ÓÃµÄÁ£×ÓÁĞ±í | list the list of particles that you can use
+- åˆ—å‡ºä½ æ‰€èƒ½ä½¿ç”¨çš„ç²’å­åˆ—è¡¨ | list the list of particles that you can use
 
-# Donation
-- Èç¹ûÄãÖ§³Ö×÷ÕßµÄ¿ª·¢,Çë´òÈÎÒâÊı¶îµÄ½ğ¶îÖÁÖ§¸¶±¦1173572640@qq.com,ÎÒÃÇ½«×öµÄ¸üºÃ
-- If you support the author's development, please call any amount of money to  Our Alipay account : 1173572640@qq.com
-- We will try to do better :D
