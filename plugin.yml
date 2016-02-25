@@ -1,0 +1,16 @@
+name: ParticleShop
+author: zzz
+load: POSTWORLD
+api: 1.10.0
+version: 1.5
+main: ParticleShop\ParticleShop
+commands:
+ ps:
+  description: ParticleShop
+  usage: /ps help
+  permission: ParticleShop.commands
+  aliases: ["粒子"]
+permissions:
+ ParticleShop.commands:
+  description: "ParticleShop命令"
+  default: true
