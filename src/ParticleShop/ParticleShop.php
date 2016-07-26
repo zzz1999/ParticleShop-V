@@ -42,11 +42,13 @@ use onebone\economyapi\EconomyAPI;
 class ParticleShop extends PluginBase implements Listener{
     
     private static $instance;
+	
+	private $tap=array();
     
     public function onEnable(){
         $this->getServer()->getPluginManager()->registerEvents($this,$this);
         @mkdir($this->getDataFolder(),0777,true);
-        @mkdir($this->getDataFolder().'\\Players');
+        @mkdir($this->getDataFolder().'\Players');
         $this->shops=new Config($this->getDataFolder().'ParticleShopVector3.yml',Config::YAML);
         self::$instance = $this;
 		
@@ -63,7 +65,7 @@ class ParticleShop extends PluginBase implements Listener{
         $blockid=$block->getId();
 		$player=$event->getPlayer();
 		if(in_array($blockid,[63,68,323])){
-        if($sign->getText()[0] == TextFormat::BLUE.'[点击购买粒子]'){
+        if(isset($sign->getText()[0]) and $sign->getText()[0] == TextFormat::BLUE.'[点击购买粒子]'){
         if(array_key_exists($block->getX().','.$block->getY().','.$block->getZ().','.$player->getLevel()->getName(),$this->shops->getAll())){
 			
 			$config = new Config($this->getDataFolder().'\\Players\\'.$event->getPlayer()->getName().'.yml',Config::YAML,array('particle'));
@@ -75,9 +77,18 @@ class ParticleShop extends PluginBase implements Listener{
                 $a=mb_substr(TextFormat::clean($sign->getText()[2]),5);
                 $particle=$config->get('particle',array());
                 if(!in_array($a,$config->get('particle',array()))){
-				
-					$price=mb_substr(TextFormat::clean($sign->getText()[1]),3);
 					if($a=='暂无')return;
+					$price=mb_substr(TextFormat::clean($sign->getText()[1]),3);
+					
+					$now = microtime(true);
+					$loc = $block->getX().",".$block->getY().",".$block->getZ().",".$block->getLevel()->getFolderName();
+				if(!isset($this->tap[$player->getName()]) or $now - $this->tap[$player->getName()][1] >= 1.5  or $this->tap[$player->getName()][0] !== $loc){
+					$this->tap[$player->getName()] = [$loc, $now];
+					$player->sendMessage('你确定要购买'.mb_substr(TextFormat::clean($sign->getText()[2]),5).'吗?再次点击确认.');
+					return;
+				}else{
+					unset($this->tap[$player->getName()]);
+				}
                 EconomyAPI::getInstance()->reduceMoney($player, $price);
                 $player->sendMessage(TextFormat::YELLOW.'你已经购买了'.$a);
                 $particle[count($particle)] = $a;
@@ -94,7 +105,7 @@ class ParticleShop extends PluginBase implements Listener{
     
     public function onWrite(SignChangeEvent $event){
         $line=$event->getLines();
-        if($line[0]==='ps' or '粒子' or '粒子商店'){
+        if(isset($line[0]) and (in_array($line[0],['ps','粒子','粒子商店']))){
             if($event->getPlayer()->isOp()){
                if(is_numeric($line[1])){	
                     if($this->getSignParticle($line[2])){
@@ -110,11 +121,14 @@ class ParticleShop extends PluginBase implements Listener{
                         }else{
 							$event->getPlayer()->sendMessage(TextFormat::RED.'没有'.$line[2].'这种粒子');
 							}
-					}
-                }
-            }
-            
+				}else{
+					$event->getPlayer()->sendMessage(TextFormat::RED.'价格输入错误或未输入');
+				}
+			}
         }
+	}
+            
+        
     
     //获取粒子
     
@@ -127,7 +141,7 @@ class ParticleShop extends PluginBase implements Listener{
             case 'criticalparticle':
                 return '暴击粒子';
 			case '2':
-			case 'DestroyBlockParticle':
+			case 'destroyblockparticle':
 				return '破坏方块';
             case '3':
             case 'dustparticle':
@@ -157,13 +171,13 @@ class ParticleShop extends PluginBase implements Listener{
             case 'lavadripparticle':
                 return '岩浆滴落';
 			case '12':
-			case 'LavaParticle':
+			case 'lavaparticle':
 				return '岩浆粒子';
 			case '13':
-			case 'MobSpawnParticle':
+			case 'mobspawnparticle':
 				return '生物烟雾';
 			case '14':
-			case 'PortalParticle':
+			case 'portalparticle':
 				return '末影粒子';
 			case '15':
 			case 'redstoneparticle':
@@ -261,16 +275,16 @@ class ParticleShop extends PluginBase implements Listener{
     }
     
     private function getNow($a){
-        return (new Config($this->getDataFolder().'\\Players\\'.$a.'.yml',Config::YAML))->get('now');
+        return (new Config($this->getDataFolder().'\Players\\'.$a.'.yml',Config::YAML))->get('now');
     }
     
     private function getParticle($n){
-        $config=new Config($this->getDataFolder().'\\Players\\'.$n.'.yml',Config::YAML);
+        $config=new Config($this->getDataFolder().'\Players\\'.$n.'.yml',Config::YAML);
         return $config->get('particle',array());
     }
     
     private function setParticle($name,$number){
-        $config=new Config($this->getDataFolder().'\\Players\\'.$name.'.yml',Config::YAML);
+        $config=new Config($this->getDataFolder().'\Players\\'.$name.'.yml',Config::YAML);
         $config->set('now',($config->get('particle')[$number]));
         $config->save();
     }
@@ -279,7 +293,7 @@ class ParticleShop extends PluginBase implements Listener{
         if($command->getName()=='ps' or '粒子'){
 			if(isset($args[0])){
             $name=$sender->getName();
-            $config=new Config($this->getDataFolder().'\\Players\\'.$name.'.yml',Config::YAML,array('particle'));
+            $config=new Config($this->getDataFolder().'\Players\\'.$name.'.yml',Config::YAML,array('particle'));
             //$particle=$config->get('particle',array());
                 switch($args[0]){
 				case '帮助':
@@ -289,6 +303,7 @@ class ParticleShop extends PluginBase implements Listener{
 				$sender->sendMessage(TextFormat::GREEN.'[Particle]-ListParticles列出可用粒子  '.TextFormat::WHITE.'/ps list/ 列表');
 				$sender->sendMessage(TextFormat::GREEN.'[Particle]-StopParticle关闭粒子  '.TextFormat::WHITE.'/ps stop/ 关闭');
 				return true;
+				
                 case '设置':
                 case 'set':
 				if(isset($args[1])){
@@ -302,7 +317,6 @@ class ParticleShop extends PluginBase implements Listener{
 					$sender->sendMessage('ParticleShop.AI: '.TextFormat::RED.'你想表达什么');
 				}
                 return true;
-                break;
                 
                 case '列表':
                 case 'list':
@@ -311,15 +325,13 @@ class ParticleShop extends PluginBase implements Listener{
                     $sender->sendMessage(TextFormat::YELLOW.$key.TextFormat::WHITE.'->'.TextFormat::GREEN.$value."\n");
                 }
                 return true;
-                break;
-                
+           
                 case '关闭':
                 case 'stop':
                 $config->set('now',null);
                 $config->save();
                 $sender->sendMessage(TextFormat::RED.'成功关闭粒子效果');
                 return true;
-                break;
             }
             unset($sender,$command,$label,$args);
 			}else{
@@ -334,9 +346,9 @@ class ParticleShop extends PluginBase implements Listener{
         if(in_array($block->getId(),[63,68,323])){
         if(array_key_exists($block->getX().','.$block->getY().','.$block->getZ().','.$player->getLevel()->getName(),$this->shops->getAll())){		
             if(!$player->isOp()){
-        $player->sendMessage(TextFormat::RED.'§2[粒子商店]§f: §bHey,你不是OP,不能破坏商店');			
-        $event->setCancelled(true);
-		return;
+				$player->sendMessage(TextFormat::RED.'§2[粒子商店]§f: §bHey,你不是OP,不能破坏商店');			
+				$event->setCancelled(true);
+				return;
                 }
 			$this->shops->remove($block->getX().','.$block->getY().','.$block->getZ().','.$player->getLevel()->getName());
 			$this->shops->save();			
