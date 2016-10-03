@@ -65,13 +65,12 @@ class ParticleShop extends PluginBase implements Listener{
         $blockid=$block->getId();
 		$player=$event->getPlayer();
 		if(in_array($blockid,[63,68,323])){
-        if(isset($sign->getText()[0]) and $sign->getText()[0] == TextFormat::BLUE.'[点击购买粒子]'){
-        if(array_key_exists($block->getX().','.$block->getY().','.$block->getZ().','.$player->getLevel()->getName(),$this->shops->getAll())){
-			
-			$config = new Config($this->getDataFolder().'\\Players\\'.$event->getPlayer()->getName().'.yml',Config::YAML,array('particle'));
-            $money = EconomyAPI::getInstance()->myMoney($player);
+			if(isset($sign->getText()[0]) and $sign->getText()[0] == TextFormat::BLUE.'[点击购买粒子]'){
+				if(array_key_exists($block->getX().','.$block->getY().','.$block->getZ().','.$player->getLevel()->getName(),$this->shops->getAll())){	
+					$config = new Config($this->getDataFolder().'\\Players\\'.$event->getPlayer()->getName().'.yml',Config::YAML,array('particle'));
+					$money = EconomyAPI::getInstance()->myMoney($player);
         if($money < mb_substr(TextFormat::clean($sign->getText()[1]),3)){
-                $player->sendMessage(TextFormat::RED.'你没有足够的钱');
+            $player->sendMessage(TextFormat::RED.'你没有足够的钱');
                 return;
             }else{
                 $a=mb_substr(TextFormat::clean($sign->getText()[2]),5);
@@ -79,7 +78,6 @@ class ParticleShop extends PluginBase implements Listener{
                 if(!in_array($a,$config->get('particle',array()))){
 					if($a=='暂无')return;
 					$price=mb_substr(TextFormat::clean($sign->getText()[1]),3);
-					
 					$now = microtime(true);
 					$loc = $block->getX().",".$block->getY().",".$block->getZ().",".$block->getLevel()->getFolderName();
 				if(!isset($this->tap[$player->getName()]) or $now - $this->tap[$player->getName()][1] >= 1.5  or $this->tap[$player->getName()][0] !== $loc){
@@ -199,21 +197,18 @@ class ParticleShop extends PluginBase implements Listener{
 				return '水滴滴落';
 			case '21':
 			case 'waterparticle':
-				return '水粒子';
-			
-				
+				return '水粒子';	
             default: return false;
         }
-    }//感觉翻译日了狗
+    }
 	
 	public function OnMove(PlayerMoveEvent $event){
-			$player=$event->getPlayer();
-			$x=$player->getX();
-			$y=$player->getY();
-			$z=$player->getZ();
-			$pn=$this->getNow($player->getName());
-            if(!$this->addParticle($pn,$player))return;
-			
+		$player=$event->getPlayer();
+		$x=$player->getX();
+		$y=$player->getY();
+		$z=$player->getZ();
+		$pn=$this->getNow($player->getName());
+		if(!$this->addParticle($pn,$player))return;
 			$player->getLevel()->addParticle($this->addParticle($pn,new Vector3($x + 1,$y,$z)));
             $player->getLevel()->addParticle($this->addParticle($pn,new Vector3($x - 1,$y,$z)));
             $player->getLevel()->addParticle($this->addParticle($pn,new Vector3($x,$y,$z + 1)));
@@ -271,7 +266,7 @@ class ParticleShop extends PluginBase implements Listener{
 			return new WaterParticle($pos);
 			
             default: return false;
-        }//坑线
+        }
     }
     
     private function getNow($a){
@@ -347,7 +342,7 @@ class ParticleShop extends PluginBase implements Listener{
         if(array_key_exists($block->getX().','.$block->getY().','.$block->getZ().','.$player->getLevel()->getName(),$this->shops->getAll())){		
             if(!$player->isOp()){
 				$player->sendMessage(TextFormat::RED.'§2[粒子商店]§f: §bHey,你不是OP,不能破坏商店');			
-				$event->setCancelled(true);
+				$event->setCancelled();
 				return;
                 }
 			$this->shops->remove($block->getX().','.$block->getY().','.$block->getZ().','.$player->getLevel()->getName());
@@ -356,3 +351,4 @@ class ParticleShop extends PluginBase implements Listener{
         }	
     }	
 }
+
